@@ -1,0 +1,22 @@
+2025-09-05 03-09 - WARNING - No IP found. Request path: "/admin/login/"
+2025-09-05 03-09 - INFO - IP_ADDRESS: 127.0.0.1 hit this path: "/"
+2025-09-05 03-09 - INFO - IP_ADDRESS: 127.0.0.1 hit this path: "/admin/login/"
+2025-09-05 03-09 - INFO - IP_ADDRESS: 127.0.0.1 hit this path: "/admin/login/"
+2025-09-05 03-09 - CRITICAL - 127.0.0.1 tried to access /admin/login/
+2025-09-05 03-09 - INFO - IP_ADDRESS: 127.0.0.1 hit this path: "/"
+2025-09-05 03-09 - CRITICAL - 127.0.0.1 tried to access /
+2025-09-05 03-09 - INFO - IP_ADDRESS: 127.0.0.1 hit this path: "/"
+2025-09-05 03-09 - INFO - IP_ADDRESS: 127.0.0.1 hit this path: "/"
+2025-09-05 03-09 - INFO - IP_ADDRESS: 127.0.0.1 hit this path: "/"
+2025-09-05 03-09 - CRITICAL - 127.0.0.1 tried to access /
+2025-09-05 03-09 - INFO - IP_ADDRESS: 127.0.0.1 hit this path: "/admin/login/"
+2025-09-06 07:22 - INFO - IP 1.2.3.4 hit path '/some-path/' from Ghana - Accra
+2025-09-06 07:22 - INFO - IP 1.2.3.4 hit path '/some-path/' from Ghana - Accra
+2025-09-06 07:22 - INFO - IP 9.9.9.9 hit path '/blocked/' from Unknown - Unknown
+2025-09-06 07:22 - CRITICAL - Blocked IP 9.9.9.9 tried to access /blocked/
+2025-09-06 08:48 - INFO - IP 1.2.3.4 hit path '/some-path/' from Ghana - Accra
+2025-09-06 08:48 - INFO - IP 9.9.9.9 hit path '/blocked/' from Unknown - Unknown
+2025-09-06 08:51 - INFO - IP 1.2.3.4 hit path '/some-path/' from Ghana - Accra
+2025-09-06 08:51 - INFO - IP 1.2.3.4 hit path '/some-path/' from Ghana - Accra
+2025-09-06 08:51 - INFO - IP 9.9.9.9 hit path '/blocked/' from Unknown - Unknown
+2025-09-06 08:51 - CRITICAL - Blocked IP 9.9.9.9 tried to access /blocked/
