@@ -2,6 +2,7 @@ from typing import Any
 import logging
 from django.http import HttpResponseForbidden
 from django.core.cache import cache
+from django.db import IntegrityError
 from django.utils import timezone
 from ip_tracking.models import BlockedIP, RequestLog
 # from ip_tracking.tasks import save_request_log
@@ -21,8 +22,10 @@ logger.addHandler(file_handler)
 logger.setLevel(logging.INFO)
 
 
-class TrackIPMiddleware:
-    """Middleware to track, cache geolocation, block IPs, and count sensitive path hits."""
+class  IPLoggingMiddleware:
+    """
+    Middleware to track, cache geolocation, block IPs,
+    and count sensitive path hits."""
 
     CACHE_TIMEOUT = 60 * 60 * 24  # 24 hours
     SENSITIVE_PATHS = ["/admin", "/login"]
@@ -36,30 +39,40 @@ class TrackIPMiddleware:
             logger.warning(f"No IP found. Request path: {request.path}")
             return self.get_response(request)
 
-        # Sensitive path counting
+        # Blocking blacklisted IP
+        if BlockedIP.objects.filter(ip_address=client_ip).exists():
+            logger.critical(f"Blocked IP {client_ip} tried to access {request.path}")
+            return HttpResponseForbidden("403 Forbidden")
+
+
+        # Sensitive path counting and caching to redis
         for sensitive in self.SENSITIVE_PATHS:
             if request.path.startswith(sensitive):
-                bucket = timezone.now().strftime("%Y%m%d%H")  # current hour
-                key = f"hits:{client_ip}:{bucket}"
-                if not cache.add(key, 0, timeout=3600):  # create if missing
-                    try:
+                hour = timezone.now().strftime("%Y%m%d%H")  # current hour
+                key = f"hits:{client_ip}:{hour}"
+                try:
+                    if cache.add(key, 1, timeout=3600):  # create if missing
+                        pass
+                    else:
                         cache.incr(key)  # increment
-                    except Exception as e:
+                except Exception as e:
                         logger.warning(f"Failed to increment counter for {client_ip}: {e}")
                 break
 
-        # Geolocation caching
+        # Geolocation caching for 24 hours
         cache_key = f"geo:{client_ip}"
         cached_location = cache.get(cache_key)
 
+        # geolocation is attached to request object from the middleware in IPGeolocationMiddleware
         if cached_location:
             request.geolocation = cached_location
         elif hasattr(request, "geolocation") and request.geolocation:
             cache.set(cache_key, request.geolocation, self.CACHE_TIMEOUT)
 
+
         response = self.get_response(request)
 
-        # Logging
+        # Logging request to log file and to DB
         if hasattr(request, "geolocation") and request.geolocation:
             country = request.geolocation.get("country_name", "Unknown Country")
             city = request.geolocation.get("city", "Unknown City")
@@ -67,17 +80,14 @@ class TrackIPMiddleware:
                 f"IP {client_ip} hit path '{request.path}' "
                 f"from {country} - {city}"
             )
-            if client_ip:
-                RequestLog.objects.get_or_create(
+            try:
+                RequestLog.objects.create(
                     ip_address=client_ip,
                     path=request.path,
                     country=country,
                     city=city)
-
-        # Blocking
-        if BlockedIP.objects.filter(ip_address=client_ip).exists():
-            logger.critical(f"Blocked IP {client_ip} tried to access {request.path}")
-            return HttpResponseForbidden("403 Forbidden")
+            except IntegrityError:
+                pass 
 
         return response
 

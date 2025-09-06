@@ -1,6 +1,8 @@
 from celery import shared_task
 from django.core.cache import cache
+from django.conf import settings
 from django.utils import timezone
+from django.db import IntegrityError
 from datetime import timedelta
 from ip_tracking.models import SuspiciousIP, RequestLog
 
@@ -23,6 +25,7 @@ def detect_anomalies():
     prev_hour = (timezone.now() - timedelta(hours=1)).strftime("%Y%m%d%H")
 
     pattern = f"hits:*:{prev_hour}"
+    threshold = getattr(settings,"SUSPICIOUS_REQUEST_THRESHOLD", 100)
 
     try:
         keys = cache.iter_keys(pattern) # type: ignore
@@ -31,9 +34,13 @@ def detect_anomalies():
 
     for key in keys:
         count = cache.get(key) or 0
-        if count > 100:
+        if count > threshold:
             # Extract the IP from the key format hits:<ip>:<hour>
             parts = key.split(":")
             ip = parts[1] if len(parts) >= 3 else "unknown"
             reason = f"Exceeded {count} requests in hour {prev_hour}"
-            SuspiciousIP.objects.get_or_create(ip_address=ip, reason=reason)
+            try:
+                SuspiciousIP.objects.create(ip_address=ip, reason=reason)
+            except IntegrityError:
+                pass
+

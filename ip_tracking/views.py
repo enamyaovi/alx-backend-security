@@ -12,7 +12,7 @@ def loginview(request):
     if getattr(request, "limited", False):
         return JsonResponse(
             {"error": "Too many login attempts. Please try again later."},
-            status=429,  # HTTP 429 Too Many Requests
+            status=429
         )
 
     if request.method == 'POST':
@@ -28,6 +28,6 @@ def loginview(request):
 
     return HttpResponse("<h1>Login Page - Submit credentials via POST</h1>")
 
-
+@ratelimit(key="user", rate="10/m", method="GET", block=True)
 def secure(request):
     return HttpResponse("<h1>Secure page - You are logged in</h1>")

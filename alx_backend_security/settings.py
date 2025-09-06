@@ -58,7 +58,7 @@ MIDDLEWARE = [
     
     #my custom middleware
     'django_ip_geolocation.middleware.IpGeolocationMiddleware',
-    'ip_tracking.middleware.TrackIPMiddleware'
+    'ip_tracking.middleware.IPLoggingMiddleware'
 ]
 
 ROOT_URLCONF = 'alx_backend_security.urls'
@@ -154,4 +154,24 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
+}
+SENSITIVE_PATHS = ["/admin/", "/login/"]
+SUSPICIOUS_REQUEST_THRESHOLD = 100  #requests per hour
+
+RATELIMIT_USE_CACHE = 'default'
+RATELIMIT_HASH_ALGORITHM = 'hashlib.md5'
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/1"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/2"
+CELERY_RESULT_EXPIRES = 3600
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30
+
+from celery.schedules import crontab
+CELERY_BEAT_SCHEDULE = {
+    'detect-anomalies-hourly': {
+        'task': 'ip_tracking.tasks.detect_anomalies',  
+        'schedule': crontab(minute=0, hour='*'),       
+        'args': (),                                     
+    },
 }

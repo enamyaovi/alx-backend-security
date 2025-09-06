@@ -19,4 +19,3 @@
 2025-09-06 08:51 - INFO - IP 1.2.3.4 hit path '/some-path/' from Ghana - Accra
 2025-09-06 08:51 - INFO - IP 1.2.3.4 hit path '/some-path/' from Ghana - Accra
 2025-09-06 08:51 - INFO - IP 9.9.9.9 hit path '/blocked/' from Unknown - Unknown
-2025-09-06 08:51 - CRITICAL - Blocked IP 9.9.9.9 tried to access /blocked/
